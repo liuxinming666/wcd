@@ -1,6 +1,7 @@
 <template>
     <div>
         <div :id="id" :option="option" :obj="chartObj"></div>
+        <div>测试</div>
     </div>
 </template>
 <script>
