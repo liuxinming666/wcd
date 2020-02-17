@@ -1,0 +1,2 @@
+(window["webpackJsonp"]=window["webpackJsonp"]||[]).push([["chunk-2d2077b4"],{a15c:function(n,e,t){"use strict";t.r(e);var c=function(){var n=this,e=n.$createElement,t=n._self._c||e;return t("div",[n._v(" 我是中间的组件 ")])},a=[],r={name:"center-content"},u=r,o=t("2877"),s=Object(o["a"])(u,c,a,!1,null,"39527da6",null);e["default"]=s.exports}}]);
+//# sourceMappingURL=chunk-2d2077b4.4734aa3d.js.map
