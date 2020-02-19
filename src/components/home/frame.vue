@@ -464,7 +464,7 @@ debugger;
                 this.bShowMap = true;
 
                 //加载甘肃省界
-                let bjDs = new Cesium.GeoJsonDataSource.load('/MapDate/ShengJie_line.txt', {
+                let bjDs = new Cesium.GeoJsonDataSource.load('/MapData/ShengJie_line.txt', {
                     stroke: Cesium.Color.HOTPINK,
                     fill: Cesium.Color.PINK,
                     strokeWidth: 1,

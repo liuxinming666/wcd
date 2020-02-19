@@ -4,6 +4,7 @@ import Router from 'vue-router'
 import login from '@/components/Login'
 import home from '@/components/home/index'
 import frame from '@/components/home/frame'
+import threeDim from '@/components/home/threeDim'
 
 Vue.use(Router)
 /**
@@ -16,7 +17,8 @@ Router.prototype.push = function push(location) {
 const router= new Router({
         routes: [
             {path: '/login', component: login, name: 'login'},
-            {path: '/', component: frame, name: 'frame'}
+            {path: '/frame', component: frame, name: 'frame'},
+            {path: '/', component: threeDim, name: 'threeDim'},
         ]
     }
 );
