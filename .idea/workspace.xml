@@ -145,7 +145,7 @@
     <session id="-1043487505">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="11" />
+          <entry key="project.closed" value="13" />
           <entry key="project.open.time.0" value="1" />
           <entry key="project.open.time.120" value="1" />
           <entry key="project.open.time.121" value="1" />
@@ -153,13 +153,15 @@
           <entry key="project.open.time.24" value="1" />
           <entry key="project.open.time.55" value="1" />
           <entry key="project.open.time.58" value="1" />
+          <entry key="project.open.time.64" value="1" />
           <entry key="project.open.time.67" value="2" />
           <entry key="project.open.time.68" value="1" />
+          <entry key="project.open.time.72" value="2" />
           <entry key="project.open.time.73" value="2" />
           <entry key="project.open.time.77" value="1" />
           <entry key="project.open.time.80" value="1" />
           <entry key="project.open.time.96" value="1" />
-          <entry key="project.opened" value="15" />
+          <entry key="project.opened" value="18" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -167,9 +169,9 @@
           <entry key="css" value="7" />
           <entry key="geojson" value="7" />
           <entry key="html" value="7" />
-          <entry key="js" value="15" />
+          <entry key="js" value="16" />
           <entry key="json" value="6" />
-          <entry key="vue" value="125" />
+          <entry key="vue" value="127" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
@@ -177,9 +179,9 @@
           <entry key="CSS" value="7" />
           <entry key="HTML" value="7" />
           <entry key="JSON" value="6" />
-          <entry key="JavaScript" value="15" />
+          <entry key="JavaScript" value="16" />
           <entry key="PLAIN_TEXT" value="7" />
-          <entry key="Vue.js" value="125" />
+          <entry key="Vue.js" value="127" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.edit">
@@ -187,7 +189,7 @@
           <entry key="css" value="11" />
           <entry key="html" value="113" />
           <entry key="js" value="142" />
-          <entry key="vue" value="12027" />
+          <entry key="vue" value="13140" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
@@ -195,7 +197,7 @@
           <entry key="CSS" value="11" />
           <entry key="HTML" value="113" />
           <entry key="JavaScript" value="142" />
-          <entry key="Vue.js" value="12027" />
+          <entry key="Vue.js" value="13140" />
         </counts>
       </usages-collector>
     </session>
@@ -206,13 +208,12 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/components/home/frame.vue">
+        <entry file="file://$PROJECT_DIR$/src/router/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="176">
-              <caret line="493" column="23" lean-forward="true" selection-start-line="493" selection-start-column="23" selection-end-line="493" selection-end-column="32" />
+            <state relative-caret-position="297">
+              <caret line="17" column="17" selection-start-line="17" selection-start-column="17" selection-end-line="17" selection-end-column="17" />
               <folding>
-                <element signature="e#9162#9186#0" expanded="true" />
-                <element signature="e#11753#13697#0" />
+                <element signature="e#0#21#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -221,22 +222,11 @@
       <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/components/home/threeDim.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="216">
-              <caret line="22" column="59" lean-forward="true" selection-start-line="22" selection-start-column="59" selection-end-line="22" selection-end-column="59" />
+            <state relative-caret-position="291">
+              <caret line="66" column="22" selection-start-line="66" selection-start-column="20" selection-end-line="70" selection-end-column="25" />
               <folding>
-                <element signature="e#165#189#0" />
-              </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/router/index.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="297">
-              <caret line="14" column="58" lean-forward="true" selection-start-line="14" selection-start-column="58" selection-end-line="14" selection-end-column="58" />
-              <folding>
-                <element signature="e#0#21#0" expanded="true" />
+                <element signature="n#style#0;n#div#0;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#div#1;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -253,15 +243,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>contacts</find>
-      <find>curContacts</find>
-      <find>bor</find>
-      <find>full</find>
-      <find>Mock</find>
-      <find>series</find>
-      <find>chartWidth</find>
-      <find>tableData</find>
-      <find>tableWidth</find>
       <find>tabVale</find>
       <find>wat</find>
       <find>nShowType</find>
@@ -283,6 +264,15 @@
       <find>镇</find>
       <find>tableHeight</find>
       <find>init</find>
+      <find>initMap</find>
+      <find>flyTo</find>
+      <find>updateHierarchy</find>
+      <find>onBtnClick</find>
+      <find>polygonPts</find>
+      <find>this.polygonPts.push</find>
+      <find>onCesiumLeftClick</find>
+      <find>this.</find>
+      <find>this.polygonPts</find>
     </findStrings>
     <replaceStrings>
       <replace>g_viewer</replace>
@@ -379,7 +369,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -426,6 +415,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -534,14 +524,18 @@
       <workItem from="1581693133586" duration="740000" />
       <workItem from="1581833404227" duration="1326000" />
       <workItem from="1582111304159" duration="2562000" />
+      <workItem from="1582198059341" duration="6200000" />
+      <workItem from="1582250026606" duration="6843000" />
+      <workItem from="1582285088938" duration="7300000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="301159000" />
+    <option name="totallyTimeSpent" value="321502000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1382" height="744" extended-state="6" />
+    <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.4975" visible="true" weight="0.18080357" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
@@ -633,34 +627,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/public/MapDate/XianJie.geojson">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="250">
-          <caret line="3" column="844" selection-start-line="3" selection-start-column="844" selection-end-line="3" selection-end-column="844" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/MapDate/diqujie.geojson">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
+    <entry file="file://$PROJECT_DIR$/public/MapDate/XianJie.geojson" />
+    <entry file="file://$PROJECT_DIR$/public/MapDate/diqujie.geojson" />
     <entry file="file://$PROJECT_DIR$/public/MapDate/920000.geojson" />
-    <entry file="file://$PROJECT_DIR$/public/MapDate/910000.geojson">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="75">
-          <caret line="3" column="91" selection-start-line="3" selection-start-column="83" selection-end-line="3" selection-end-column="91" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/MapDate/ShengJie.geojson">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="325">
-          <caret line="3" column="1201" selection-start-line="3" selection-start-column="1201" selection-end-line="3" selection-end-column="1201" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/public/MapDate/XianJie_line.geojson">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
+    <entry file="file://$PROJECT_DIR$/public/MapDate/910000.geojson" />
+    <entry file="file://$PROJECT_DIR$/public/MapDate/ShengJie.geojson" />
+    <entry file="file://$PROJECT_DIR$/public/MapDate/XianJie_line.geojson" />
     <entry file="file://$PROJECT_DIR$/public/js/common/common.js">
       <provider selected="true" editor-type-id="text-editor">
         <state>
@@ -888,19 +860,15 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/components/home/frame.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="493" column="23" lean-forward="true" selection-start-line="493" selection-start-column="23" selection-end-line="493" selection-end-column="32" />
-          <folding>
-            <element signature="e#9162#9186#0" expanded="true" />
-            <element signature="e#11753#13697#0" />
-          </folding>
+        <state relative-caret-position="232">
+          <caret line="236" column="17" lean-forward="true" selection-start-line="236" selection-start-column="17" selection-end-line="236" selection-end-column="17" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/router/index.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="297">
-          <caret line="14" column="58" lean-forward="true" selection-start-line="14" selection-start-column="58" selection-end-line="14" selection-end-column="58" />
+          <caret line="17" column="17" selection-start-line="17" selection-start-column="17" selection-end-line="17" selection-end-column="17" />
           <folding>
             <element signature="e#0#21#0" expanded="true" />
           </folding>
@@ -909,10 +877,11 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/components/home/threeDim.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="216">
-          <caret line="22" column="59" lean-forward="true" selection-start-line="22" selection-start-column="59" selection-end-line="22" selection-end-column="59" />
+        <state relative-caret-position="291">
+          <caret line="66" column="22" selection-start-line="66" selection-start-column="20" selection-end-line="70" selection-end-column="25" />
           <folding>
-            <element signature="e#165#189#0" />
+            <element signature="n#style#0;n#div#0;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
+            <element signature="n#style#0;n#div#1;n#div#0;n#div#0;n#template#0;n#!!top" expanded="true" />
           </folding>
         </state>
       </provider>
