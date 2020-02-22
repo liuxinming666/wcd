@@ -3,7 +3,7 @@
         <Layout v-bind:style="{width:fullWidth, height:fullHeight}">
             <LayoutPanel region="north" style="height:70px;">
                 <top :curUser="curUser" @changeLeft="changeLeft"
-                     @monitWaring="monitWaring"></top>
+                     @monitWaring="monitWaring" @floodAnaly="floodAnaly"></top>
             </LayoutPanel>
             <LayoutPanel region="west"
                          v-bind:split="true"
@@ -18,6 +18,27 @@
             <LayoutPanel region="center" style="height: 100%">
                 <componet :is="curCenterComponent" v-show="!bShowMap"></componet>
                 <div id="cesiumContainer" @mousemove="onCesiumMouseMove" v-show="bShowMap">
+                    <div v-show="bShowFloodAnaly" class="location-bar no-print" style="left: 2px; top: 50px;">
+                        淹没面积为100平方公里
+                    </div>
+                    <div v-show="bShowFloodAnaly" class="location-bar no-print" style="left: 300px; bottom: 10px; width: 600px;display: inline-block;">
+                        <div style="display: inline-block;width: 350px;">
+                            控制站水位:
+                            <el-slider
+                                    v-model="sliderValue"
+                                    show-input>
+                            </el-slider>
+                        </div>
+                        <div style="display: inline-block;width: 150px;position:absolute;left:380px;bottom: 5px;">
+                            流量:<br/>
+                            <el-input
+                                    style="width: 100px;"
+                                    placeholder="请输入内容"
+                                    v-model="input"
+                                    :disabled="true">
+                            </el-input>
+                        </div>
+                    </div>
                 </div>
                 <div class="btn-toolbar no-print" v-show="bShowMap">
                     <div id="toolbar" class="btn-group"
@@ -223,7 +244,9 @@
                 dataSourceWW:new Cesium.CustomDataSource('WW'),     //水情预警ds
                 dryWarningData:[],    //旱情预警数据
                 dataSourceDW:new Cesium.CustomDataSource('DW'),     //旱情预警ds
-                randomTxt:''    //随机字符串
+                sliderValue:0,
+                bShowFloodAnaly:false,
+                randomTxt:''    //随机字符串,
             }
         },
         beforeMount:function(){
@@ -239,17 +262,12 @@
             initMap:function () {
                 let viewerOption = {
                     imageryProvider: new Cesium.WebMapTileServiceImageryProvider({
-                        url: "http://t0.tianditu.com/vec_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=vec&tileMatrixSet=w&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default&format=tiles&tk=3b6e1ded5e34e4a985ce9167106c62a0",
-                        // "https://t0.tianditu.gov.cn/vec_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=img&tileMatrixSet=w&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default&format=tiles&tk=3b6e1ded5e34e4a985ce9167106c62a0",
-                        //"http://t0.tianditu.gov.cn/img_w/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0&LAYER=img&STYLE=default&TILEMATRIXSET=w&FORMAT=tiles&TILEMATRIX={z}&TILEROW={x}&TILECOL={y}&tk=3b6e1ded5e34e4a985ce9167106c62a0",
-
-                        layer: "tdtVecBasicLayer",//"tdtBasicLayer",
+                        url: "http://t0.tianditu.com/img_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=img&tileMatrixSet=w&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default&format=tiles&tk=3b6e1ded5e34e4a985ce9167106c62a0",
+                        layer: "tdtBasicLayer",
                         style: "default",
                         format: "image/jpeg",
                         tileMatrixSetID: "GoogleMapsCompatible",
-                        minimumLevel: 1,
-                        maximumLevel: 18,
-                        show: false
+                        maximumLevel: 18
                     }),
                     geocoder: true,
                     baseLayerPicker: false,
@@ -457,6 +475,29 @@ debugger;
                         }
                     }
                 }
+            },
+            //点击了顶部菜单淹没分析
+            floodAnaly:function(){
+                this.lefComponentWidth = "0";
+                this.bShowMap = true;
+
+                this.bShowLayerDiv = false;
+                this.$refs.digWarning.close();
+                this.$refs.stationInfo.close();
+
+                //左下角坐标，右上角坐标
+                let rectangle = Cesium.Rectangle.fromDegrees(
+                    114.56324151805556,
+                    34.93954377361111,
+                    115.34781292833334,
+                    35.389662817777776);
+
+                g_viewer.imageryLayers.addImageryProvider(new Cesium.SingleTileImageryProvider({
+                    url:"/MapData/flood/t8000.tif",
+                    rectangle: rectangle
+                }))
+
+                g_viewer.scene.camera.flyTo({destination: rectangle});
             },
             //点击了顶部菜单监测预警
             monitWaring:function(){
@@ -738,5 +779,9 @@ debugger;
         background: #12346B;
         left: 0px;
         padding: 0px 0px 6px 0px;
+    }
+
+    /deep/ .el-input__inner {
+        height: 30px;
     }
 </style>

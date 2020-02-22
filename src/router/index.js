@@ -17,8 +17,8 @@ Router.prototype.push = function push(location) {
 const router= new Router({
         routes: [
             {path: '/login', component: login, name: 'login'},
-            {path: '/frame', component: frame, name: 'frame'},
-            {path: '/', component: threeDim, name: 'threeDim'},
+            {path: '/', component: frame, name: 'frame'},
+            {path: '/threeDim', component: threeDim, name: 'threeDim'},
         ]
     }
 );

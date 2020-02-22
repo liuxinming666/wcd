@@ -58,6 +58,16 @@
                         menuName:'信息发布',
                         iconURL:'/images/menuimg/f2_nav4_2.png',
                         url:'infoPublish/left'
+                    },
+                    {
+                        menuName:'防汛调度',
+                        iconURL:'/images/menuimg/f2_nav4_2.png',
+                        url:'floodControl/left'
+                    },
+                    {
+                        menuName:'淹没分析',
+                        iconURL:'/images/menuimg/f2_nav4_2.png',
+                        url:'infoPublish/left'
                     }
                 ],
                 //当前选中的菜单索引
@@ -79,6 +89,10 @@
                 if(menuIndex == 1) {
                     //alert('监测预警');
                     this.$emit('monitWaring');
+                }
+                else if(menuIndex == 5){
+                    //alert('淹没分析');
+                    this.$emit('floodAnaly');
                 }
                 else{
                     this.$emit('changeLeft',menuItem);
