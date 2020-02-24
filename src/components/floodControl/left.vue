@@ -11,15 +11,15 @@
                 <i class="el-icon-location"></i>
                 <span slot="title">设计洪水过程选取</span>
             </el-menu-item>
-            <el-menu-item index="infoPublish/dxxxfb">
+            <el-menu-item index="floodControl/schemeSet">
                 <i class="el-icon-location"></i>
                 <span slot="title">调度方案设定</span>
             </el-menu-item>
-            <el-menu-item index="infoPublish/yzyjsz">
+            <el-menu-item index="floodControl/schemeCal">
                 <i class="el-icon-location"></i>
                 <span slot="title">调度方案计算</span>
             </el-menu-item>
-            <el-menu-item index="infoPublish/zzxxfb">
+            <el-menu-item index="floodControl/schemeEval">
                 <i class="el-icon-location"></i>
                 <span slot="title">调度方案分析评价</span>
             </el-menu-item>

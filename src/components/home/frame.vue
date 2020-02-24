@@ -279,7 +279,7 @@
                     navigationHelpButton: false,
                     navigationInstructionsInitiallyVisible: false,
                     animation: false,
-                    sceneMode: Cesium.SceneMode.SCENE2D//SCENE3D
+                    sceneMode: Cesium.SceneMode.SCENE3D//SCENE2D
                 };
                 g_viewer = new Cesium.Viewer('cesiumContainer', viewerOption);
                 g_viewer._cesiumWidget._creditContainer.style.display = "none";// 隐藏版权
