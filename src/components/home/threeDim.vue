@@ -64,11 +64,11 @@
                         tileMatrixSetID: "GoogleMapsCompatible",
                         maximumLevel: 18
                     }),
-                    /*terrainProvider:new Cesium.CesiumTerrainProvider({
+                    terrainProvider:new Cesium.CesiumTerrainProvider({
                         url:"https://lab.earthsdk.com/terrain/577fd5b0ac1f11e99dbd8fd044883638",
                         requestVertexNormals: true,
                         requestWaterMask: true
-                    }),*/
+                    }),
                     geocoder: true,
                     baseLayerPicker: false,
                     fullscreenButton: false,
@@ -82,6 +82,9 @@
                     sceneMode: Cesium.SceneMode.SCENE3D//SCENE3D
                 };
                 g_viewer = new Cesium.Viewer('cesiumContainer', viewerOption);
+
+                //let scene = g_viewer.scene;
+                //scene.globe.depthTestAgainstTerrain = true;
 
                 g_viewer.screenSpaceEventHandler.setInputAction(
                     this.onCesiumLeftClick,

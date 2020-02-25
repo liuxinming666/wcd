@@ -18,7 +18,7 @@
             <LayoutPanel region="center" style="height: 100%">
                 <componet :is="curCenterComponent" v-show="!bShowMap"></componet>
                 <div id="cesiumContainer" @mousemove="onCesiumMouseMove" v-show="bShowMap">
-                    <div v-show="bShowFloodAnaly" class="location-bar no-print" style="left: 2px; top: 50px;">
+                    <div class="location-bar no-print" style="left: 2px; top: 50px;">
                         淹没面积为100平方公里
                     </div>
                     <div v-show="bShowFloodAnaly" class="location-bar no-print" style="left: 300px; bottom: 10px; width: 600px;display: inline-block;">

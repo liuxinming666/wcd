@@ -1,10 +1,11 @@
-import Vue from 'vue'
+﻿import Vue from 'vue'
 import Router from 'vue-router'
 
 import login from '@/components/Login'
 import home from '@/components/home/index'
 import frame from '@/components/home/frame'
 import threeDim from '@/components/home/threeDim'
+import threeDim2 from '@/components/home/threeDim2'
 
 Vue.use(Router)
 /**
@@ -17,8 +18,9 @@ Router.prototype.push = function push(location) {
 const router= new Router({
         routes: [
             {path: '/login', component: login, name: 'login'},
-            {path: '/', component: frame, name: 'frame'},
+            {path: '/frame', component: frame, name: 'frame'},
             {path: '/threeDim', component: threeDim, name: 'threeDim'},
+            {path: '/', component: threeDim2, name: 'threeDim2'},
         ]
     }
 );
