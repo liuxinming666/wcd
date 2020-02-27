@@ -18,10 +18,14 @@
             <LayoutPanel region="center" style="height: 100%">
                 <componet :is="curCenterComponent" v-show="!bShowMap"></componet>
                 <div id="cesiumContainer" @mousemove="onCesiumMouseMove" v-show="bShowMap">
-                    <div class="location-bar no-print" style="left: 2px; top: 50px;">
-                        淹没面积为100平方公里
+                    <div v-show="bShowFloodAnaly" class="location-bar no-print" style="left: 2px; top: 50px;">
+                        涉及乡镇(个)：{{flood1}}<br/>
+                        漫滩水深(米)：{{flood2}}<br/>
+                        淹没滩地(亩)：{{flood3}}<br/>
+                        淹没耕地(亩)：{{flood4}}<br/>
+                        进水村庄(个)：{{flood5}}<br/>
                     </div>
-                    <div v-show="bShowFloodAnaly" class="location-bar no-print" style="left: 300px; bottom: 10px; width: 600px;display: inline-block;">
+                    <!--<div v-show="bShowFloodAnaly" class="location-bar no-print" style="left: 300px; bottom: 10px; width: 600px;display: inline-block;">
                         <div style="display: inline-block;width: 350px;">
                             控制站水位:
                             <el-slider
@@ -38,7 +42,7 @@
                                     :disabled="true">
                             </el-input>
                         </div>
-                    </div>
+                    </div>-->
                 </div>
                 <div class="btn-toolbar no-print" v-show="bShowMap">
                     <div id="toolbar" class="btn-group"
@@ -246,7 +250,25 @@
                 dataSourceDW:new Cesium.CustomDataSource('DW'),     //旱情预警ds
                 sliderValue:0,
                 bShowFloodAnaly:false,
-                randomTxt:''    //随机字符串,
+                randomTxt:'',    //随机字符串,
+                //淹没分析用的相关变量
+                polygonEntities:[],
+                height_max:800,
+                height_min:200,
+                extrudedHeight:this.height_min,
+                polygon_degrees:[
+                    115.8784, 40.0198,
+                    115.9473, 40.0381,
+                    115.9614, 40.0073,
+                    115.9042, 39.9912
+                ],
+                timer:null,
+                speed: 20,
+                flood1:1,
+                flood2:0.3,
+                flood3:3200,
+                flood4:1900,
+                flood5:1
             }
         },
         beforeMount:function(){
@@ -268,6 +290,11 @@
                         format: "image/jpeg",
                         tileMatrixSetID: "GoogleMapsCompatible",
                         maximumLevel: 18
+                    }),
+                    terrainProvider:new Cesium.CesiumTerrainProvider({
+                        url:"https://lab.earthsdk.com/terrain/577fd5b0ac1f11e99dbd8fd044883638",
+                        requestVertexNormals: true,
+                        requestWaterMask: true
                     }),
                     geocoder: true,
                     baseLayerPicker: false,
@@ -484,25 +511,105 @@ debugger;
                 this.bShowLayerDiv = false;
                 this.$refs.digWarning.close();
                 this.$refs.stationInfo.close();
+                this.bShowFloodAnaly = true;
 
-                //左下角坐标，右上角坐标
-                let rectangle = Cesium.Rectangle.fromDegrees(
-                    114.56324151805556,
-                    34.93954377361111,
-                    115.34781292833334,
-                    35.389662817777776);
+                this.startFloodAnaly();
+            },
+            //开始洪水淹没分析
+            startFloodAnaly:function(){
+                this.initViewStatus();
+                this.loadGrandCanyon();
+                this.drawPoly(this.polygon_degrees);
 
-                g_viewer.imageryLayers.addImageryProvider(new Cesium.SingleTileImageryProvider({
-                    url:"/MapData/flood/t8000.tif",
-                    rectangle: rectangle
-                }))
+                this.timer = window.setInterval(() => {
+                    if ((this.height_max > this.extrudedHeight) && (this.extrudedHeight >= this.height_min)) {
+                        this.extrudedHeight = this.extrudedHeight + Number(this.speed);
+                        this.flood1 = this.flood1 + 1;
+                        this.flood2 = (parseFloat(this.flood2) + 0.01).toFixed(2);
+                        this.flood3 = this.flood3 + 100;
+                        this.flood4 = this.flood4 + 100;
+                        this.flood5 = this.flood5 + 1;
+                    } else {
+                        this.extrudedHeight = Number(this.height_min);
+                        this.flood1 = 1;
+                        this.flood2 = 0.3;
+                        this.flood3 = 3200;
+                        this.flood4 = 1900;
+                        this.flood5 = 1;
+                    }
+                }, 500);
+            },
+            //淹没分析时初始化视角
+            initViewStatus:function () {
+                let scene = g_viewer.scene;
+                scene.globe.depthTestAgainstTerrain = true;
+                scene.camera.setView({
+                    // 摄像头的位置
+                    destination: Cesium.Cartesian3.fromDegrees(115.9216, 39.9870, 1500.0),
+                    orientation: {
+                        heading: Cesium.Math.toRadians(0.0),//默认朝北0度，顺时针方向，东是90度
+                        pitch: Cesium.Math.toRadians(-20),//默认朝下看-90,0为水平看，
+                        roll: Cesium.Math.toRadians(0)//默认0
+                    }
+                });
+                g_viewer.skyAtmosphere = false;
+            },
+            // 淹没分析时切割一部分地形
+            loadGrandCanyon:function () {
+                let globe = g_viewer.scene.globe;
+                let position = Cesium.Cartographic.toCartesian(
+                    new Cesium.Cartographic.fromDegrees(115.9165534, 40.0139345, 100)
+                );
+                let distance = 3000.0;
+                let boundingSphere = new Cesium.BoundingSphere(position, distance);
 
-                g_viewer.scene.camera.flyTo({destination: rectangle});
+                globe.clippingPlanes = new Cesium.ClippingPlaneCollection({
+                    modelMatrix: Cesium.Transforms.eastNorthUpToFixedFrame(position),
+                    planes: [
+                        new Cesium.ClippingPlane(new Cesium.Cartesian3(1.5, 0.0, 0.0), distance),
+                        new Cesium.ClippingPlane(new Cesium.Cartesian3(-1.5, 0.0, 0.0), distance),
+                        new Cesium.ClippingPlane(new Cesium.Cartesian3(0.0, 1.5, 0.0), distance),
+                        new Cesium.ClippingPlane(new Cesium.Cartesian3(0.0, -1.5, 0.0), distance)
+                    ],
+                    unionClippingRegions: true
+                });
+                globe.clippingPlanes.enabled = true;
+                g_viewer.camera.viewBoundingSphere(boundingSphere, new Cesium.HeadingPitchRange(0.5, -0.5, boundingSphere.radius * 5.0));
+                g_viewer.camera.lookAtTransform(Cesium.Matrix4.IDENTITY);
+            },
+            //淹没分析时绘制面
+            drawPoly:function (degrees) {
+                let entity = g_viewer.entities.add({
+                    polygon: {
+                        hierarchy: {},
+                        material: new Cesium.Color.fromBytes(64, 157, 253, 100),
+                        perPositionHeight: true,
+                    }
+                });
+
+                entity.polygon.hierarchy = new Cesium.PolygonHierarchy(
+                    Cesium.Cartesian3.fromDegreesArray(degrees)
+                );
+                entity.polygon.extrudedHeight = new Cesium.CallbackProperty(
+                    () => this.extrudedHeight, false
+                );
+                this.polygonEntities.push(entity);
             },
             //点击了顶部菜单监测预警
             monitWaring:function(){
+                if(this.timer){
+                    window.clearInterval(this.timer);
+                    this.timer = null;
+                }
+
+                g_viewer.scene.globe.clippingPlanes = null;
+                g_viewer.scene.globe.depthTestAgainstTerrain = false;
+                g_viewer.skyAtmosphere = true;
+
+                g_viewer.entities.removeAll();
                 this.lefComponentWidth = "0";
                 this.bShowMap = true;
+                this.bShowFloodAnaly = false;
 
                 //加载甘肃省界
                 let bjDs = new Cesium.GeoJsonDataSource.load('/MapData/ShengJie_line.txt', {
