@@ -309,7 +309,21 @@
                     sceneMode: Cesium.SceneMode.SCENE3D//SCENE2D
                 };
                 g_viewer = new Cesium.Viewer('cesiumContainer', viewerOption);
+
+                g_viewer.clock.onTick.addEventListener(this.onCesiumTick);
+
                 g_viewer._cesiumWidget._creditContainer.style.display = "none";// 隐藏版权
+            },
+            //cesium自带的定时器事件
+            onCesiumTick:function(){
+                if(g_viewer.camera.pitch > -0.4 && this.bShowFloodAnaly){
+                    g_viewer.camera.setView({
+                        orientation: {
+                            pitch : -0.4
+                        }
+                    });
+                    //this.g_viewer.scene.screenSpaceCameraController.enableTilt = false;
+                }
             },
             //树节点复选事件
             onTreeNodeChecked:function(event){
