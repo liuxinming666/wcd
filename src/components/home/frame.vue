@@ -3,7 +3,9 @@
         <Layout v-bind:style="{width:fullWidth, height:fullHeight}">
             <LayoutPanel region="north" style="height:70px;">
                 <top :curUser="curUser" @changeLeft="changeLeft"
-                     @monitWaring="monitWaring" @floodAnaly="floodAnaly"></top>
+                     @monitWaring="monitWaring"
+                     @floodAnaly="floodAnaly"
+                     @contaAnaly="contaAnaly"></top>
             </LayoutPanel>
             <LayoutPanel region="west"
                          v-bind:split="true"
@@ -18,6 +20,13 @@
             <LayoutPanel region="center" style="height: 100%">
                 <componet :is="curCenterComponent" v-show="!bShowMap"></componet>
                 <div id="cesiumContainer" @mousemove="onCesiumMouseMove" v-show="bShowMap">
+                    <div id="main" v-show="bShowFloodEvo"
+                         style="height: 250px;width: 500px;position: absolute;z-index: 1;margin: 0px;">
+                    </div>
+                    <img ref="imgGif" v-show="bGifShow"
+                         style="position: absolute;
+                         z-index: 1;top: -20px;left: -20px;"
+                         src="/images/warn/red.gif">
                     <div v-show="bShowFloodAnaly" class="location-bar no-print" style="left: 2px; top: 50px;">
                         涉及乡镇(个)：{{flood1}}<br/>
                         漫滩水深(米)：{{flood2}}<br/>
@@ -197,6 +206,7 @@
     //import widget from "cesium/Widgets/widgets.css";
     import Top from "./top";
     import Left from "./left";
+    var echarts = require('echarts');
 
     var g_viewer = null;
 
@@ -268,11 +278,20 @@
                 flood2:0.3,
                 flood3:3200,
                 flood4:1900,
-                flood5:1
+                flood5:1,
+                //洪水演进所需的数据
+                bShowFloodEvo:false,        //是否显示流量过程线
+                bbox:[93.412690,32.596075,108.709382,42.793593],//生成数据的边界
+                linePts:[],      //随机生成线的坐标集合
+                routePts:[],     //播放路径的坐标点集合
+                polyPositions:null,     //当前路径的坐标点
+                curRouteIndex:1,        //当前路径走到的点
+                eChartsTitle:'',
+                bGifShow:false,     //动图是否显示
             }
         },
         beforeMount:function(){
-            this.curLeftComponent=() => import('@/components/infoShow/left');
+            this.curLeftComponent=() => import('@/components/floodControl/left');
             this.curCenterComponent=() => import('@/components/home/centerContent');
             //this.curStationInfoComponent=() => import('@/components/monitWarning/jksp');
         },
@@ -283,7 +302,7 @@
             //初始化地图
             initMap:function () {
                 let viewerOption = {
-                    imageryProvider: new Cesium.WebMapTileServiceImageryProvider({
+                    /*imageryProvider: new Cesium.WebMapTileServiceImageryProvider({
                         url: "http://t0.tianditu.com/img_w/wmts?service=wmts&request=GetTile&version=1.0.0&LAYER=img&tileMatrixSet=w&TileMatrix={TileMatrix}&TileRow={TileRow}&TileCol={TileCol}&style=default&format=tiles&tk=3b6e1ded5e34e4a985ce9167106c62a0",
                         layer: "tdtBasicLayer",
                         style: "default",
@@ -293,6 +312,17 @@
                     }),
                     terrainProvider:new Cesium.CesiumTerrainProvider({
                         url:"https://lab.earthsdk.com/terrain/577fd5b0ac1f11e99dbd8fd044883638",
+                        requestVertexNormals: true,
+                        requestWaterMask: true
+                    }),*/
+                    imageryProvider: new Cesium.UrlTemplateImageryProvider({
+                        url: 'http://115.29.141.58:8098/MapData/gansu/{z}/{x}/{y}.png',
+                        tilingScheme: new Cesium.WebMercatorTilingScheme(),
+                        minimumLevel: 0,
+                        maximumLevel: 11
+                    }),
+                    terrainProvider:new Cesium.CesiumTerrainProvider({
+                        url: 'http://115.29.141.58:8098/MapData/hongshuiDEM',
                         requestVertexNormals: true,
                         requestWaterMask: true
                     }),
@@ -310,8 +340,59 @@
                 };
                 g_viewer = new Cesium.Viewer('cesiumContainer', viewerOption);
 
+                //加载洪水淹没部分的影像
+                g_viewer.imageryLayers.addImageryProvider(
+                    new Cesium.UrlTemplateImageryProvider({
+                        url: 'http://115.29.141.58:8098/MapData/hongshui/{z}/{x}/{y}.png',
+                        tilingScheme: new Cesium.WebMercatorTilingScheme(),
+                        minimumLevel: 0,
+                        maximumLevel: 17
+                    }));
+
+                //加载高清影像
+                /*g_viewer.imageryLayers.addImageryProvider(
+                    new Cesium.UrlTemplateImageryProvider({
+                        url: 'http://115.29.141.58:8098/MapData/gaoqing/{z}/{x}/{y}.png',
+                        tilingScheme: new Cesium.WebMercatorTilingScheme(),
+                        minimumLevel: 0,
+                        maximumLevel: 22
+                    }));*/
+
+                //加载甘肃省界
+                let bjDs = new Cesium.GeoJsonDataSource.load('/MapData/ShengJie_line.txt', {
+                    stroke: Cesium.Color.HOTPINK,
+                    fill: Cesium.Color.PINK,
+                    strokeWidth: 1,
+                    markerSymbol: '?'
+                })
+                g_viewer.dataSources.add(bjDs);
+
+                //加载河流线
+                let river3 = new Cesium.GeoJsonDataSource.load('/MapData/gs_river3.txt', {
+                    stroke: new Cesium.Color(0, 0, 1, 0.5),
+                    fill: new Cesium.Color(0, 0, 1, 0.5),
+                    strokeWidth: 1,
+                    markerSymbol: '?'
+                })
+                g_viewer.dataSources.add(river3);
+                let river4 = new Cesium.GeoJsonDataSource.load('/MapData/gs_river4.txt', {
+                    stroke: new Cesium.Color(0, 0, 1, 0.5),
+                    fill: new Cesium.Color(0, 0, 1, 0.5),
+                    strokeWidth: 1,
+                    markerSymbol: '?'
+                })
+                g_viewer.dataSources.add(river4);
+                let river5 = new Cesium.GeoJsonDataSource.load('/MapData/gs_river5.txt', {
+                    stroke: new Cesium.Color(0, 0, 1, 0.5),
+                    fill: new Cesium.Color(0, 0, 1, 0.5),
+                    strokeWidth: 1,
+                    markerSymbol: '?'
+                })
+                g_viewer.dataSources.add(river5);
+
                 g_viewer.clock.onTick.addEventListener(this.onCesiumTick);
 
+                g_viewer.scene.globe.baseColor = Cesium.Color.BLACK;
                 g_viewer._cesiumWidget._creditContainer.style.display = "none";// 隐藏版权
             },
             //cesium自带的定时器事件
@@ -517,6 +598,191 @@ debugger;
                     }
                 }
             },
+            //停止淹没分析
+            stopFloodAnaly:function(){
+                debugger;
+                this.bShowFloodEvo = false;
+                this.bShowFloodAnaly = false;
+                this.bGifShow = false;
+                //允许缩放
+                g_viewer.scene.screenSpaceCameraController.enableZoom = true;
+                if(this.timer){
+                    g_viewer.entities.removeAll();
+                    window.clearInterval(this.timer);
+                    this.timer = null;
+                }
+            },
+            //初始化图表
+            initEChart:function () {
+                let myChart = echarts.init(document.getElementById('main'));
+
+                let colors = ['#5793f3', '#d14a61', '#675bba'];
+                let option = {
+                    color: colors,
+                    title: {
+                        text: this.eChartsTitle,
+                        textStyle:{
+                            'color': '#FFFFFF'
+                        },
+                        x:'center'
+                    },
+                    tooltip: {
+                        trigger: 'none',
+                        axisPointer: {
+                            type: 'cross'
+                        }
+                    },
+                    grid: {
+                        top: 70,
+                        bottom: 50
+                    },
+                    xAxis: [
+                        {
+                            axisLabel:{color:'rgb(255,255,255)'},
+                            type: 'category',
+                            axisTick: {
+                                alignWithLabel: true
+                            },
+                            axisLine: {
+                                onZero: false,
+                                lineStyle: {
+                                    color: colors[1]
+                                }
+                            },
+                            axisPointer: {
+                                label: {
+                                    formatter: function (params) {
+                                        return '时间:' + params.value;
+                                    }
+                                }
+                            },
+                            data: ['08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00']
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            name:'水位(m)',
+                            nameTextStyle:{color:'#FFFFFF'},
+                            type: 'value',
+                            min: 0,
+                            max: 250,
+                            interval: 50,
+                            axisLabel:{color:'rgb(255,255,255)'}
+                        },
+                        {
+                            name:'流量(m³/s)',
+                            nameTextStyle:{color:'#FFFFFF'},
+                            type: 'value',
+                            min: 0,
+                            max: 250,
+                            interval: 50,
+                            axisLabel:{color:'rgb(255,255,255)'}
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '流量',
+                            type: 'line',
+                            yAxisIndex: 1,
+                            smooth: true,
+                            data: [2.6, 5.9, 9.0, 26.4, 28.7, 70.7, 175.6, 182.2, 48.7, 18.8, 6.0, 2.3]
+                        },
+                        {
+                            name: '水位',
+                            type: 'line',
+                            smooth: true,
+                            data: [3.9, 5.9, 11.1, 18.7, 48.3, 69.2, 231.6, 46.6, 55.4, 18.4, 10.3, 0.7]
+                        }
+                    ]
+                };
+
+                myChart.clear();
+                myChart.setOption(option,true);
+            },
+            //初始化图表2
+            initEChart2:function(){
+                let myChart = echarts.init(document.getElementById('main'));
+
+                let colors = ['#5793f3', '#d14a61', '#675bba'];
+                let option = {
+                    color: colors,
+                    title: {
+                        text:'污染物到达时间:2020年1月2日 08:00',
+                        subtext:this.eChartsTitle,
+                        textStyle:{
+                            'color': '#FFFFFF'
+                        },
+                        x:'center'
+                    },
+                    tooltip: {
+                        trigger: 'none',
+                        axisPointer: {
+                            type: 'cross'
+                        }
+                    },
+                    grid: {
+                        top: 70,
+                        bottom: 50
+                    },
+                    xAxis: [
+                        {
+                            axisLabel:{color:'rgb(255,255,255)'},
+                            type: 'category',
+                            axisTick: {
+                                alignWithLabel: true
+                            },
+                            axisLine: {
+                                onZero: false,
+                                lineStyle: {
+                                    color: colors[1]
+                                }
+                            },
+                            axisPointer: {
+                                label: {
+                                    formatter: function (params) {
+                                        return '时间:' + params.value;
+                                    }
+                                }
+                            },
+                            data: [
+                                '10-05 08:00',
+                                '10-06 08:00',
+                                '10-07 08:00',
+                                '10-08 08:00',
+                                '10-09 08:00',
+                                '10-10 08:00',
+                                '10-11 08:00',
+                                '10-12 08:00',
+                                '10-13 08:00',
+                                '10-14 08:00',
+                                '10-15 08:00',
+                                '10-16 08:00',
+                                '10-17 08:00',
+                                '10-18 08:00',
+                                '10-19 08:00'
+                            ]
+                        }
+                    ],
+                    yAxis: [
+                        {
+                            nameTextStyle:{color:'#FFFFFF'},
+                            type: 'value',
+                            axisLabel:{color:'rgb(255,255,255)'}
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '水质变化情况',
+                            type: 'line',
+                            smooth: true,
+                            data: [2.6, 5.9, 9.0, 26.4, 28.7, 70.7, 175.6, 182.2, 48.7, 18.8, 6.0, 2.3,2.0,1.9,1.8]
+                        }
+                    ]
+                };
+
+                myChart.clear();
+                myChart.setOption(option,true);
+            },
             //点击了顶部菜单淹没分析
             floodAnaly:function(){
                 this.lefComponentWidth = "0";
@@ -525,15 +791,449 @@ debugger;
                 this.bShowLayerDiv = false;
                 this.$refs.digWarning.close();
                 this.$refs.stationInfo.close();
-                this.bShowFloodAnaly = true;
 
-                this.startFloodAnaly();
+                this.stopFloodAnaly();
+                this.curRouteIndex = 1;
+                //g_viewer.scene.globe.clippingPlanes.enabled = true;
+                g_viewer.scene.globe.clippingPlanes = null;
+                this.floodEvo();
+            },
+            //点击了顶部菜单污染物演进
+            contaAnaly:function(){
+                this.lefComponentWidth = "0";
+                this.bShowMap = true;
+
+                this.bShowLayerDiv = false;
+                this.$refs.digWarning.close();
+                this.$refs.stationInfo.close();
+
+                this.stopFloodAnaly();
+                this.curRouteIndex = 1;
+                g_viewer.scene.globe.clippingPlanes = null;
+
+                this.contaEvo();
+            },
+            //开始局部的污染物模拟
+            startContaAnaly:async function(){
+                debugger;
+                let dsTmp = await new Cesium.GeoJsonDataSource.load('/MapData/polygon.txt', {
+                    /*stroke: new Cesium.Color(0, 0, 1, 0.5),
+                    fill: Cesium.Color.PINK,*/
+                    strokeWidth: 1,
+                    markerSymbol: '?'
+                });
+                let entityObj = dsTmp.entities.values[0];
+                entityObj.polygon.material = new Cesium.ImageMaterialProperty({
+                    image:'/images/test.png'
+                });
+                let entity = g_viewer.entities.add(entityObj);
+                /*polygon.entities.values[0].polygon.material = new Cesium.ImageMaterialProperty({
+                    image:'/MapData/t0.png'
+                });
+
+                g_viewer.dataSources.add(polygon);*/
+                debugger;
+
+                g_viewer.flyTo(entity,{
+                    duration:0.001
+                });
+            },
+            //污染物沿着线进行演进
+            contaEvo:function(){
+                this.randomLineString2();
+
+                this.timer = window.setInterval(() => {
+                    if (this.curRouteIndex <= this.routePts.length) {
+
+                        if(this.curRouteIndex == 100){
+                            this.bShowFloodEvo = true;
+                            this.eChartsTitle = "水质站A水质变化曲线";
+                            this.initEChart2();
+                        }
+
+                        /*if(this.curRouteIndex == 800){
+                            this.bShowFloodEvo = false;
+                        }*/
+
+                        if(this.curRouteIndex == 250){
+                            this.bShowFloodEvo = true;
+                            this.eChartsTitle = "水质站B水质变化曲线";
+                            this.initEChart2();
+                        }
+
+                        if(this.curRouteIndex == 300){
+                            if(this.timer){
+                                debugger;
+                                this.bShowFloodEvo = false;
+                                //this.bGifShow = false;
+                                g_viewer.entities.removeAll();
+                                window.clearInterval(this.timer);
+                                this.timer = null;
+
+                                //开始淹没分析
+                                //this.bShowFloodAnaly = true;
+                                //this.startContaAnaly();
+                            }
+                        }
+
+                        if((this.curRouteIndex - 50) > 0){
+                            this.polyPositions = Cesium.Cartesian3.fromDegreesArray(
+                                _.flatten(_.slice(this.routePts,this.curRouteIndex - 50,this.curRouteIndex))
+                            );
+                        }
+                        else{
+                            this.polyPositions = Cesium.Cartesian3.fromDegreesArray(
+                                _.flatten(_.slice(this.routePts,0,this.curRouteIndex))
+                            );
+                        }
+                        this.curRouteIndex = this.curRouteIndex + 1;
+                    } else {
+                        if(this.timer){
+                            this.bShowFloodEvo = false;
+                            /*this.bGifShow = false;*/
+                            g_viewer.entities.removeAll();
+                            window.clearInterval(this.timer);
+                            this.timer = null;
+
+                            //开始局部分析
+                            /*this.bShowFloodAnaly = true;
+                            this.startFloodAnaly();*/
+                        }
+                    }
+                }, 10);
+            },
+            //随机绘制线污染物
+            randomLineString2:function () {
+                debugger;
+                g_viewer.entities.removeAll();
+                let lineStrings = turf.randomLineString(
+                    1,
+                    {
+                        bbox: this.bbox,
+                        num_vertices:400,
+                        max_length:0.01,
+                        max_rotation:Math.PI/100
+                    }
+                );
+                this.linePts = lineStrings.features[0].geometry.coordinates;
+
+                let entity = g_viewer.entities.add({
+                    polyline:{
+                        positions:Cesium.Cartesian3.fromDegreesArray(
+                            _.flatten(lineStrings.features[0].geometry.coordinates)
+                        ),
+                        material:new Cesium.ColorMaterialProperty(
+                            new Cesium.Color(0, 0, 1, 0.5)),
+                        width:10,
+                        clampToGround:true
+                    }
+                });
+
+                g_viewer.flyTo(entity,{duration:0.001});
+
+                this.routePts = [];
+                this.routePts.push(this.linePts[0]);
+                for(let i = 1;i < this.linePts.length;i++){
+                    let pt1Tmp = turf.point(this.linePts[i-1]);
+                    let pt2Tmp = turf.point(this.linePts[i]);
+                    //这两个点之间的距离
+                    let pt1ToPt2Dis = turf.distance(
+                        pt1Tmp,
+                        pt2Tmp,
+                        {units: 'kilometers'});
+                    let totalDis = 0;   //当前两点之间路径距离的总和
+                    while(true){
+                        let bearing = turf.bearing(pt1Tmp, pt2Tmp);
+
+                        let distance = 1000 / 1000;  //两点间隔为500米
+                        let options = {units: 'kilometers'};
+
+                        let destination = turf.destination(
+                            pt1Tmp,
+                            distance,
+                            bearing,
+                            options);
+                        this.routePts.push(destination.geometry.coordinates);
+
+                        totalDis =  totalDis + distance;
+                        if(totalDis >= pt1ToPt2Dis){
+                            break;
+                        }
+                    }
+
+                }
+                debugger;
+
+                let entity2 = g_viewer.entities.add({
+                    polyline:{
+                        positions:new Cesium.CallbackProperty(
+                            () => this.polyPositions, false
+                        ),
+                        /*material:new Cesium.ImageMaterialProperty({
+                            image:'/images/test.png'
+                        }),*/
+                        material:new Cesium.ColorMaterialProperty(
+                            new Cesium.Color(224/255, 118/255, 31/255, 0.8)
+                        ),
+                        clampToGround:true,
+                        width:8,
+                        zIndex:99
+                    }
+                });
+
+                let entity3 = g_viewer.entities.add({
+                    position : Cesium.Cartesian3.fromDegrees(
+                        this.routePts[100][0],
+                        this.routePts[100][1]),
+                    show:true,
+                    billboard : {
+                        image : '/images/geoImg/engi.png',
+                        scale:0.7,
+                        horizontalOrigin:Cesium.HorizontalOrigin.RIGHT,
+                        distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0.0, 2000000.0)
+                    },
+                    label : {
+                        text : '水质站点A',
+                        scale:0.5,
+                        fillColor:Cesium.Color.BLUE,
+                        showBackground:true,
+                        backgroundColor:new Cesium.Color(240/255, 240/255, 240/255, 0.8),
+                        horizontalOrigin:Cesium.HorizontalOrigin.LEFT,
+                        distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0.0, 2000000.0)
+                    }
+                });
+
+                let entity4 = g_viewer.entities.add({
+                    position : Cesium.Cartesian3.fromDegrees(
+                        this.routePts[250][0],
+                        this.routePts[250][1]),
+                    show:true,
+                    billboard : {
+                        image : '/images/geoImg/engi.png',
+                        scale:0.7,
+                        horizontalOrigin:Cesium.HorizontalOrigin.RIGHT,
+                        distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0.0, 2000000.0)
+                    },
+                    label : {
+                        text : '水质站点B',
+                        scale:0.5,
+                        fillColor:Cesium.Color.BLUE,
+                        showBackground:true,
+                        backgroundColor:new Cesium.Color(240/255, 240/255, 240/255, 0.8),
+                        horizontalOrigin:Cesium.HorizontalOrigin.LEFT,
+                        distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0.0, 2000000.0)
+                    }
+                });
+            },
+            //沿着线进行洪水演进
+            floodEvo:function(){
+                //禁止用户缩放
+                //g_viewer.scene.screenSpaceCameraController.enableZoom = false;
+                this.randomLineString();
+                this.bGifShow = true;
+                this.timer = window.setInterval(() => {
+                    if (this.curRouteIndex <= this.routePts.length) {
+                        if(this.curRouteIndex == 100){
+                            debugger;
+                            this.bShowFloodEvo = true;
+                            this.eChartsTitle = "民和站水位流量过程线";
+                            this.initEChart();
+                        }
+
+                        /*if(this.curRouteIndex == 800){
+                            this.bShowFloodEvo = false;
+                        }*/
+
+                        if(this.curRouteIndex == 250){
+                            this.bShowFloodEvo = true;
+                            this.eChartsTitle = "小川站水位流量过程线";
+                            this.initEChart();
+                        }
+
+                        if(this.curRouteIndex == 300){
+                            if(this.timer){
+                                debugger;
+                                this.bShowFloodEvo = false;
+                                this.bGifShow = false;
+                                g_viewer.entities.removeAll();
+                                window.clearInterval(this.timer);
+                                this.timer = null;
+
+                                //开始淹没分析
+                                this.bShowFloodAnaly = true;
+                                this.startFloodAnaly();
+                            }
+                        }
+
+                        //峰头绘制动态图标
+                        let htmlOverlay = this.$refs.imgGif;
+                        let pos = this.routePts[this.curRouteIndex];
+                        g_viewer.scene.preRender.addEventListener(function () {
+                            let position = Cesium.Cartesian3.fromDegrees(
+                                pos[0],
+                                pos[1]);
+
+                            let canvasPosition = g_viewer.cesiumWidget.scene.cartesianToCanvasCoordinates(position);
+
+                            if (Cesium.defined(canvasPosition)){
+                                htmlOverlay.style.top = canvasPosition.y + 'px';
+                                htmlOverlay.style.left = canvasPosition.x + 'px';
+                            }
+                        });
+                        this.polyPositions = Cesium.Cartesian3.fromDegreesArray(
+                            _.flatten(_.slice(this.routePts,0,this.curRouteIndex))
+                        );
+
+                        this.curRouteIndex = this.curRouteIndex + 1;
+                    } else {
+                        if(this.timer){
+                            debugger;
+                            this.bShowFloodEvo = false;
+                            this.bGifShow = false;
+                            g_viewer.entities.removeAll();
+                            window.clearInterval(this.timer);
+                            this.timer = null;
+
+                            //开始淹没分析
+                            this.bShowFloodAnaly = true;
+                            this.startFloodAnaly();
+                        }
+                        /*this.curRouteIndex = 1;
+                        this.polyPositions = Cesium.Cartesian3.fromDegreesArray(
+                            _.flatten(_.slice(this.routePts,0,this.curRouteIndex))
+                        );*/
+                    }
+                }, 10);
+            },
+            //随机绘制线
+            randomLineString:function () {
+                g_viewer.entities.removeAll();
+                let lineStrings = turf.randomLineString(
+                    1,
+                    {
+                        bbox: this.bbox,
+                        num_vertices:400,
+                        max_length:0.01,
+                        max_rotation:Math.PI/100
+                    }
+                );
+                this.linePts = lineStrings.features[0].geometry.coordinates;
+
+                let entity = g_viewer.entities.add({
+                    polyline:{
+                        positions:Cesium.Cartesian3.fromDegreesArray(
+                            _.flatten(lineStrings.features[0].geometry.coordinates)
+                        ),
+                        material:new Cesium.ColorMaterialProperty(
+                            new Cesium.Color(0, 0, 1, 0.5)),
+                        width:10,
+                        clampToGround:true
+                    }
+                });
+
+                g_viewer.flyTo(entity,{duration:0.001});
+
+                this.routePts = [];
+                this.routePts.push(this.linePts[0]);
+                for(let i = 1;i < this.linePts.length;i++){
+                    let pt1Tmp = turf.point(this.linePts[i-1]);
+                    let pt2Tmp = turf.point(this.linePts[i]);
+                    //这两个点之间的距离
+                    let pt1ToPt2Dis = turf.distance(
+                        pt1Tmp,
+                        pt2Tmp,
+                        {units: 'kilometers'});
+                    let totalDis = 0;   //当前两点之间路径距离的总和
+                    while(true){
+                        let bearing = turf.bearing(pt1Tmp, pt2Tmp);
+
+                        let distance = 1000 / 1000;  //两点间隔为1000米
+                        let options = {units: 'kilometers'};
+
+                        let destination = turf.destination(
+                            pt1Tmp,
+                            distance,
+                            bearing,
+                            options);
+                        this.routePts.push(destination.geometry.coordinates);
+
+                        totalDis =  totalDis + distance;
+                        if(totalDis >= pt1ToPt2Dis){
+                            break;
+                        }
+                    }
+
+                }
+                debugger;
+
+                let entity2 = g_viewer.entities.add({
+                    polyline:{
+                        positions:new Cesium.CallbackProperty(
+                            () => this.polyPositions, false
+                        ),
+                        /*material:new Cesium.ImageMaterialProperty({
+                            image:'/images/test.png'
+                        }),*/
+                        material:new Cesium.ColorMaterialProperty(
+                            new Cesium.Color(1, 1, 0, 0.8)
+                        ),
+                        clampToGround:true,
+                        width:8,
+                        zIndex:99
+                    }
+                });
+
+                let entity3 = g_viewer.entities.add({
+                    position : Cesium.Cartesian3.fromDegrees(
+                        this.routePts[100][0],
+                        this.routePts[100][1]),
+                    show:true,
+                    billboard : {
+                        image : '/images/geoImg/engi.png',
+                        scale:0.7,
+                        horizontalOrigin:Cesium.HorizontalOrigin.RIGHT,
+                        distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0.0, 2000000.0)
+                    },
+                    label : {
+                        text : '民和站',
+                        scale:0.5,
+                        fillColor:Cesium.Color.BLUE,
+                        showBackground:true,
+                        backgroundColor:new Cesium.Color(240/255, 240/255, 240/255, 0.8),
+                        horizontalOrigin:Cesium.HorizontalOrigin.LEFT,
+                        distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0.0, 2000000.0)
+                    }
+                });
+
+                let entity4 = g_viewer.entities.add({
+                    position : Cesium.Cartesian3.fromDegrees(
+                        this.routePts[250][0],
+                        this.routePts[250][1]),
+                    show:true,
+                    billboard : {
+                        image : '/images/geoImg/engi.png',
+                        scale:0.7,
+                        horizontalOrigin:Cesium.HorizontalOrigin.RIGHT,
+                        distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0.0, 2000000.0)
+                    },
+                    label : {
+                        text : '小川站',
+                        scale:0.5,
+                        fillColor:Cesium.Color.BLUE,
+                        showBackground:true,
+                        backgroundColor:new Cesium.Color(240/255, 240/255, 240/255, 0.8),
+                        horizontalOrigin:Cesium.HorizontalOrigin.LEFT,
+                        distanceDisplayCondition:new Cesium.DistanceDisplayCondition(0.0, 2000000.0)
+                    }
+                });
             },
             //开始洪水淹没分析
             startFloodAnaly:function(){
                 this.initViewStatus();
                 this.loadGrandCanyon();
                 this.drawPoly(this.polygon_degrees);
+
+                let numTmp = 1;
 
                 this.timer = window.setInterval(() => {
                     if ((this.height_max > this.extrudedHeight) && (this.extrudedHeight >= this.height_min)) {
@@ -544,12 +1244,23 @@ debugger;
                         this.flood4 = this.flood4 + 100;
                         this.flood5 = this.flood5 + 1;
                     } else {
-                        this.extrudedHeight = Number(this.height_min);
-                        this.flood1 = 1;
+                        numTmp = numTmp + 1;
+                        if(numTmp <= 3){
+                            this.extrudedHeight = Number(this.height_min);
+                            this.flood1 = 1;
+                            this.flood2 = 0.3;
+                            this.flood3 = 3200;
+                            this.flood4 = 1900;
+                            this.flood5 = 1;
+                        }
+                        else{
+                            this.extrudedHeight = Number(this.height_max);
+                        }
+                        /*this.flood1 = 1;
                         this.flood2 = 0.3;
                         this.flood3 = 3200;
                         this.flood4 = 1900;
-                        this.flood5 = 1;
+                        this.flood5 = 1;*/
                     }
                 }, 500);
             },
@@ -611,6 +1322,7 @@ debugger;
             },
             //点击了顶部菜单监测预警
             monitWaring:function(){
+                this.stopFloodAnaly();
                 if(this.timer){
                     window.clearInterval(this.timer);
                     this.timer = null;
@@ -624,15 +1336,8 @@ debugger;
                 this.lefComponentWidth = "0";
                 this.bShowMap = true;
                 this.bShowFloodAnaly = false;
-
-                //加载甘肃省界
-                let bjDs = new Cesium.GeoJsonDataSource.load('/MapData/ShengJie_line.txt', {
-                    stroke: Cesium.Color.HOTPINK,
-                    fill: Cesium.Color.PINK,
-                    strokeWidth: 1,
-                    markerSymbol: '?'
-                })
-                g_viewer.dataSources.add(bjDs);
+                this.bShowFloodEvo = false;
+                this.bGifShow = false;
 
                 //加载工程地理信息
                 g_viewer.dataSources.add(this.dataSourceEngi);
@@ -645,7 +1350,15 @@ debugger;
                 g_viewer.dataSources.add(this.dataSourceWW);
                 g_viewer.dataSources.add(this.dataSourceDW);
 
-                g_viewer.flyTo(bjDs,{duration:1});
+                let rectangle = new Cesium.Rectangle(
+                    Cesium.Math.toRadians(this.bbox[0]),
+                    Cesium.Math.toRadians(this.bbox[1]),
+                    Cesium.Math.toRadians(this.bbox[2]),
+                    Cesium.Math.toRadians(this.bbox[3]));
+
+                g_viewer.scene.camera.flyTo({destination: rectangle});
+
+                //g_viewer.flyTo(bjDs,{duration:1});
 
                 //截获地图的左键单击事件
                 g_viewer.screenSpaceEventHandler.setInputAction(

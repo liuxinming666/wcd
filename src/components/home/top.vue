@@ -40,6 +40,21 @@
             return{
                 menuData:[
                     {
+                        menuName:'防汛调度',
+                        iconURL:'/images/menuimg/f2_nav4_2.png',
+                        url:'floodControl/left'
+                    },
+                    {
+                        menuName:'淹没分析',
+                        iconURL:'/images/menuimg/f2_nav4_2.png',
+                        url:'infoPublish/left'
+                    },
+                    {
+                        menuName:'污染物演进',
+                        iconURL:'/images/menuimg/f2_nav1_2.png',
+                        url:'infoPublish/left'
+                    },
+                    {
                         menuName:'综合信息展示',
                         iconURL:'/images/menuimg/f2_nav1_2.png',
                         url:'infoShow/left'
@@ -56,16 +71,6 @@
                     },
                     {
                         menuName:'信息发布',
-                        iconURL:'/images/menuimg/f2_nav4_2.png',
-                        url:'infoPublish/left'
-                    },
-                    {
-                        menuName:'防汛调度',
-                        iconURL:'/images/menuimg/f2_nav4_2.png',
-                        url:'floodControl/left'
-                    },
-                    {
-                        menuName:'淹没分析',
                         iconURL:'/images/menuimg/f2_nav4_2.png',
                         url:'infoPublish/left'
                     }
@@ -86,13 +91,16 @@
         },
         methods:{
             onClickTopMenu:function (menuItem,menuIndex) {
-                if(menuIndex == 1) {
+                if(menuIndex == 4) {
                     //alert('监测预警');
                     this.$emit('monitWaring');
                 }
-                else if(menuIndex == 5){
+                else if(menuIndex == 1){
                     //alert('淹没分析');
                     this.$emit('floodAnaly');
+                }
+                else if (menuIndex == 2){
+                    this.$emit('contaAnaly');
                 }
                 else{
                     this.$emit('changeLeft',menuItem);
