@@ -864,7 +864,7 @@ debugger;
             },
             //飞行完成后沿着线进行演进
             contaEvoFlyEnd:function(){
-                //g_viewer.scene.camera.moveEnd.removeEventListener(this.contaEvoFlyEnd);
+                g_viewer.scene.camera.moveEnd.removeEventListener(this.contaEvoFlyEnd);
 
                 this.timer = window.setInterval(() => {
                     if (this.curRouteIndex <= this.routePts.length) {
@@ -935,7 +935,7 @@ debugger;
             contaEvo:function(){
                 this.randomLineString2();
 
-                window.setTimeout(this.contaEvoFlyEnd,3000);
+                //window.setTimeout(this.contaEvoFlyEnd,3000);
                 //g_viewer.scene.camera.moveEnd.addEventListener(this.contaEvoFlyEnd);
             },
             //随机绘制线污染物
@@ -974,7 +974,7 @@ debugger;
 
                 g_viewer.scene.camera.flyTo({destination: rectangleChina});
 
-                g_viewer.scene.camera.moveEnd.addEventListener(this.floodEvoFlyEnd);
+                g_viewer.scene.camera.moveEnd.addEventListener(this.contaEvoFlyEnd);
                 let rectangle = new Cesium.Rectangle(
                     Cesium.Math.toRadians(104.066861),
                     Cesium.Math.toRadians(34.544617),
