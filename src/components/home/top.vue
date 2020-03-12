@@ -2,7 +2,7 @@
     <div style="background-color: #14356A" class="head-north">
         <span class="head-left" style="height: 100%; padding-top: 5px;">
             <a href="/" target="_parent" style="margin-top: 5px;float: left;"><img id="syslogo" name="syslogo" src="../../../public/_fileupload/sysPic/oklogo.png" title="系统首页" style="margin-top:0;" /></a>
-            <label id="sysname" style="color:#9EA5DE;font-size: 25px; font-weight:bold;margin-top: 8px; margin-left: 12px;display: inline-block;" name="sysname">水利综合决策子系统</label>
+            <label id="sysname" style="color:#9EA5DE;font-size: 25px; font-weight:bold;margin-top: 8px; margin-left: 12px;display: inline-block;" name="sysname">水利综合决策</label>
         </span>
         <ul class="nav">
             <li v-for="(item,index) in menuData" style="width: 120px;">
@@ -40,20 +40,30 @@
             return{
                 menuData:[
                     {
+                        menuName:'旱情分析',
+                        iconURL:'/images/menuimg/f2_nav7_2.png',
+                        url:'contaAnalysis/left'
+                    },
+                    {
+                        menuName:'水污染分析',
+                        iconURL:'/images/menuimg/f2_nav6_2.png',
+                        url:'contaAnalysis/left'
+                    },
+                    {
                         menuName:'防汛调度',
                         iconURL:'/images/menuimg/f2_nav4_2.png',
                         url:'floodControl/left'
                     },
-                    {
+                    /*{
                         menuName:'淹没分析',
-                        iconURL:'/images/menuimg/f2_nav4_2.png',
+                        iconURL:'/images/menuimg/f2_nav5_2.png',
                         url:'infoPublish/left'
                     },
                     {
                         menuName:'污染物演进',
                         iconURL:'/images/menuimg/f2_nav1_2.png',
                         url:'infoPublish/left'
-                    },
+                    },*/
                     {
                         menuName:'综合信息展示',
                         iconURL:'/images/menuimg/f2_nav1_2.png',
@@ -91,15 +101,16 @@
         },
         methods:{
             onClickTopMenu:function (menuItem,menuIndex) {
-                if(menuIndex == 4) {
+                debugger;
+                if(menuItem.menuName == '监测预警') {
                     //alert('监测预警');
                     this.$emit('monitWaring');
                 }
-                else if(menuIndex == 1){
+                else if(menuItem.menuName == '淹没分析'){
                     //alert('淹没分析');
                     this.$emit('floodAnaly');
                 }
-                else if (menuIndex == 2){
+                else if (menuItem.menuName == '污染物演进'){
                     this.$emit('contaAnaly');
                 }
                 else{

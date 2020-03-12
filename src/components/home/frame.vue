@@ -296,7 +296,7 @@
             }
         },
         beforeMount:function(){
-            this.curLeftComponent=() => import('@/components/floodControl/left');
+            this.curLeftComponent=() => import('@/components/contaAnalysis/left');
             this.curCenterComponent=() => import('@/components/home/centerContent');
             //this.curStationInfoComponent=() => import('@/components/monitWarning/jksp');
         },
